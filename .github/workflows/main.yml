@@ -1,0 +1,50 @@
+name: Build Rockchip RK3328 Kernel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            build-essential bc flex bison libssl-dev \
+            libelf-dev libncurses5-dev gcc-aarch64-linux-gnu \
+            crossbuild-essential-arm64
+
+      - name: Clone Rockchip Kernel
+        run: |
+          git clone --depth=1 https://github.com/rockchip-linux/kernel.git
+          cd kernel
+
+      - name: Configure Kernel
+        run: |
+          cd kernel
+          ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make rockchip_defconfig
+
+      - name: Compile Kernel
+        run: |
+          cd kernel
+          ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j$(nproc)
+
+      - name: Archive Kernel Image
+        run: |
+          cd kernel
+          tar -cvf kernel-rk3328.tar.gz arch/arm64/boot/Image arch/arm64/boot/dts/rockchip/
+
+      - name: Upload Kernel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rk3328-kernel
+          path: kernel/kernel-rk3328.tar.gz
+          
