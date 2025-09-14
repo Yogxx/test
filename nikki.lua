@@ -25,7 +25,7 @@ function action_backup()
     local backup_file = "/tmp/nikki_backup-" .. date .. ".tar.gz"
 
     -- Buat arsip tar.gz
-    sys.call("tar -czf " .. backup_file .. " /etc/config/tess /etc/nikki/run/providers >/dev/null 2>&1")
+    sys.call("tar -czf " .. backup_file .. " /etc/config/nikki /etc/nikki/profiles /etc/nikki/run >/dev/null 2>&1")
 
     -- Kirim file ke browser
     http.header('Content-Disposition', 'attachment; filename="' .. fs.basename(backup_file) .. '"')
