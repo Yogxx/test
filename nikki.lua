@@ -3,18 +3,11 @@ module("luci.controller.nikki", package.seeall)
 function index()
     -- Menu utama di LuCI
     entry({"admin", "services", "nikki"}, firstchild(), _("Nikki"), 90)
-
-    -- Halaman Backup/Restore
     entry({"admin", "services", "nikki", "backup"}, template("backup"), _("Backup"), 45).leaf = true
-
-    -- Endpoint aksi Backup
     entry({"admin", "services", "nikki", "do_backup"}, call("action_backup")).leaf = true
-
-    -- Endpoint aksi Restore
     entry({"admin", "services", "nikki", "do_restore"}, call("action_restore")).leaf = true
 end
 
--- Fungsi Backup
 function action_backup()
     local sys   = require "luci.sys"
     local fs    = require "nixio.fs"
@@ -24,21 +17,16 @@ function action_backup()
     local date = os.date("%Y-%m-%d_%H-%M-%S")
     local backup_file = "/tmp/nikki_backup-" .. date .. ".tar.gz"
 
-    -- Buat arsip tar.gz
     sys.call("tar -czf " .. backup_file .. " /etc/config/nikki /etc/nikki/profiles /etc/nikki/run >/dev/null 2>&1")
 
-    -- Kirim file ke browser
     http.header('Content-Disposition', 'attachment; filename="' .. fs.basename(backup_file) .. '"')
     http.prepare_content("application/gzip")
     ltn12.pump.all(ltn12.source.file(io.open(backup_file, "r")), http.write)
 
-    -- Hapus file setelah dikirim
     fs.remove(backup_file)
 
-    -- ⚠️ JANGAN redirect di sini
 end
 
--- Fungsi Restore
 function action_restore()
     local http = require "luci.http"
     local sys  = require "luci.sys"
@@ -64,7 +52,6 @@ function action_restore()
         fs.remove(file)
     end
 
-    -- ✅ Restore bisa redirect + notif
     http.redirect(luci.dispatcher.build_url("admin/services/nikki/backup") .. "?status=restore_ok")
 end
 
