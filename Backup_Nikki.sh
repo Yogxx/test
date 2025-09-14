@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Script interaktif untuk install/uninstall nikki.lua & backup.htm di LuCI
+# Bisa dijalankan langsung: wget -O - URL | sh
 
 CONTROLLER="/usr/lib/lua/luci/controller/nikki.lua"
 VIEW="/usr/lib/lua/luci/view/backup.htm"
@@ -42,7 +43,9 @@ echo "1) Install"
 echo "2) Uninstall"
 echo "=============================="
 printf "Pilih opsi [1-2]: "
-read choice
+
+# Gunakan /dev/tty agar bisa interaktif lewat pipe
+read choice < /dev/tty
 
 case "$choice" in
     1)
